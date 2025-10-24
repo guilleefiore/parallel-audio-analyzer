@@ -1,5 +1,3 @@
-# defines, tipos, constantes (N, hop, etc.)
-
 #ifndef COMMON_H
 #define COMMON_H
 
@@ -18,7 +16,7 @@ typedef enum {
 } win_t;
 
 /* Configuración de corrida (compartida entre módulos) */
-typedef struct {
+typedef struct Config{
     int fs;         /* sample rate */
     int N;          /* tamaño ventana */
     int hop;        /* avance */
