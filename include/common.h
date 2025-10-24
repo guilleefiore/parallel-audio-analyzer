@@ -1,0 +1,1 @@
+# defines, tipos, constantes (N, hop, etc.)

@@ -1,0 +1,1 @@
+# lectura/validación WAV (header + samples)
