@@ -1,6 +1,6 @@
-#include "stft.h"
-#include "window.h"
-#include "fft.h"
+#include "../include/stft.h"
+#include "../include/window.h"
+#include "../include/fft.h"
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>

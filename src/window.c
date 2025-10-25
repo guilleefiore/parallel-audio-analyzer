@@ -1,4 +1,4 @@
-#include "window.h"
+#include "../include/window.h"
 #include <math.h>
 
 /* si M_PI no existe en tu toolchain C89, define PI */

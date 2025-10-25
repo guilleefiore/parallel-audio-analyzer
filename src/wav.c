@@ -1,4 +1,4 @@
-#include "wav.h"
+#include "../include/wav.h"
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>

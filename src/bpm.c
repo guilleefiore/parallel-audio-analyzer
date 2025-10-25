@@ -1,5 +1,5 @@
 // src/bpm.c
-#include "bpm.h"
+#include "../include/bpm.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
