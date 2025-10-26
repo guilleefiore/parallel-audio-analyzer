@@ -1,4 +1,4 @@
-#include "../include/fft.h"
+#include "fft.h"
 #include <math.h>
 
 static void bitrev(float *re, float *im, int n){

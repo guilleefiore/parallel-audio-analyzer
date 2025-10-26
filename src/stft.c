@@ -1,10 +1,10 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-#include "../include/stft.h"
-#include "../include/common.h"
-#include "../include/window.h"
-#include "../include/fft.h"
+#include "stft.h"
+#include "common.h"
+#include "window.h"
+#include "fft.h"
 
 int calculate_local_frames(int rank, int n_frames, int procs_number) {
     int local_frames = 0;

@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include <mpi.h>
-#include "../include/mpi_utils.h"
-#include "../include/stft.h"
+#include "mpi_utils.h"
+#include "stft.h"
 
 float* gather_and_reorder_spectrogram(float* mag_local, int local_frames, int n_frames, 
                                        int n_bins, int rank, int procs_number) {

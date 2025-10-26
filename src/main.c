@@ -2,11 +2,11 @@
 #include <stdlib.h>
 #include <mpi.h>
 #include <string.h>
-#include "../include/wav.h"
-#include "../include/common.h"
-#include "../include/stft.h"
-#include "../include/mpi_utils.h"
-#include "../include/bpm.h"
+#include "wav.h"
+#include "common.h"
+#include "stft.h"
+#include "mpi_utils.h"
+#include "bpm.h"
 
 
 int main (int argc, char* argv[]) {

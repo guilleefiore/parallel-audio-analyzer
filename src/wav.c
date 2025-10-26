@@ -1,5 +1,5 @@
-#include "../include/wav.h"
-#include "../include/common.h"
+#include "wav.h"
+#include "common.h"
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>

@@ -1,6 +1,6 @@
 // src/bpm.c
-#include "../include/bpm.h"
-#include "../include/common.h"
+#include "bpm.h"
+#include "common.h"
 
 #include <stdio.h>
 #include <stdlib.h>
