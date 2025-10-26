@@ -12,14 +12,25 @@
 
 /* Lectura de WAV PCM16 (mono) */
 int wav_read(const char *path, WAVFile *out) {
-    FILE *f = fopen(path, "rb");
+    FILE *f;
+    char riff_id[4];
+    char wave_id[4];
+    int samplerate = 0, channels = 0, bits_per_sample = 0;
+    uint32_t data_size = 0;
+    long data_pos = 0;
+    uint16_t audio_format = 0;
+    int total_samples, frames, i, c;
+    short *raw;
+    float *samples;
+    float acc;
+    
+    f = fopen(path, "rb");
     if (!f) {
         perror("wav_read fopen");
         return -1;
     }
  
     /* Estructura WAV: RIFF header + chunks */
-    char riff_id[4];
     fread(riff_id, 1, 4, f);
     if (memcmp(riff_id, "RIFF", 4) != 0) {
         fprintf(stderr, "wav_read: No es un archivo RIFF válido (%s)\n", path);
@@ -27,21 +38,14 @@ int wav_read(const char *path, WAVFile *out) {
         return -1;
     }
 
-    fseek(f, 4, SEEK_CUR); // tamaño total (no lo usamos)
+    fseek(f, 4, SEEK_CUR); /* tamaño total (no lo usamos) */
 
-    char wave_id[4];
     fread(wave_id, 1, 4, f);
     if (memcmp(wave_id, "WAVE", 4) != 0) {
         fprintf(stderr, "wav_read: Faltante encabezado WAVE (%s)\n", path);
         fclose(f);
         return -1;
     }
-
-    /* Variables de formato */
-    int samplerate = 0, channels = 0, bits_per_sample = 0;
-    uint32_t data_size = 0;
-    long data_pos = 0;
-    uint16_t audio_format = 0;
 
     /* Leemos los chunks hasta encontrar fmt y data */
     while (!feof(f)) {
@@ -56,7 +60,7 @@ int wav_read(const char *path, WAVFile *out) {
             fread(&fmt_code, sizeof(uint16_t), 1, f);
             fread(&channels, sizeof(uint16_t), 1, f);
             fread(&samplerate, sizeof(uint32_t), 1, f);
-            fseek(f, 6, SEEK_CUR); // skip byte_rate + block_align
+            fseek(f, 6, SEEK_CUR); /* skip byte_rate + block_align */
             fread(&bits_per_sample, sizeof(uint16_t), 1, f);
             audio_format = fmt_code;
 
@@ -93,23 +97,23 @@ int wav_read(const char *path, WAVFile *out) {
     }
 
     /* Leemos los datos de audio */
-    int total_samples = data_size / 2; // 2 bytes por muestra
-    short *raw = malloc(data_size);
+    total_samples = data_size / 2; /* 2 bytes por muestra */
+    raw = malloc(data_size);
     fseek(f, data_pos, SEEK_SET);
     fread(raw, sizeof(short), total_samples, f);
     fclose(f);
 
     /* Convertir a float mono */
-    int frames = total_samples / channels;
-    float *samples = malloc(sizeof(float) * frames);
+    frames = total_samples / channels;
+    samples = malloc(sizeof(float) * frames);
 
     if (channels == 1) {
-        for (int i = 0; i < frames; i++)
+        for (i = 0; i < frames; i++)
             samples[i] = raw[i] / 32768.0f;
     } else {
-        for (int i = 0; i < frames; i++) {
-            float acc = 0.0;
-            for (int c = 0; c < channels; c++)
+        for (i = 0; i < frames; i++) {
+            acc = 0.0;
+            for (c = 0; c < channels; c++)
                 acc += raw[i * channels + c] / 32768.0;
             samples[i] = acc / channels;
         }
@@ -138,14 +142,17 @@ void wav_free(WAVFile *w) {
 int wav_write_features_csv(const char *outpath, const float *times, const float *rms,
                            const float *centroid, const float *rolloff, const float *flux,
                            int n_frames, float bpm) {
-    FILE *f = fopen(outpath, "w");
+    FILE *f;
+    int i;
+    
+    f = fopen(outpath, "w");
     if (!f) {
         perror("wav_write_features_csv");
         return -1;
     }
 
     fprintf(f, "time_s,rms,centroid_hz,rolloff_hz,flux\n");
-    for (int i = 0; i < n_frames; i++) {
+    for (i = 0; i < n_frames; i++) {
         fprintf(f, "%.6f,%.6f,%.2f,%.2f,%.6f\n",
                 times[i], rms[i], centroid[i], rolloff[i], flux[i]);
     }
@@ -169,51 +176,54 @@ static void lstrip(char **ps) {
 }
 
 int load_wav_list(const char *path, char files[MAX_FILES][MAX_PATH]) {
-    FILE *f = fopen(path, "r");
+    FILE *f;
+    int count = 0;
+    char buf[4096]; /* buffer grande para detectar líneas largas */
+    int truncated, c;
+    char *p;
+    
+    f = fopen(path, "r");
     if (!f) {
-        // perror("fopen"); // si querés loguear
+        /* perror("fopen"); */ /* si querés loguear */
         return -1;
     }
 
-    int count = 0;
-    char buf[4096]; // buffer grande para detectar líneas largas
-
     while (fgets(buf, sizeof(buf), f)) {
-        // Detectar truncamiento: si no hay '\n' y no es fin de archivo, la línea es larga
-        int truncated = (strchr(buf, '\n') == NULL && !feof(f));
+        /* Detectar truncamiento: si no hay '\n' y no es fin de archivo, la línea es larga */
+        truncated = (strchr(buf, '\n') == NULL && !feof(f));
 
-        // Recortar final (incluye \n, \r y espacios)
+        /* Recortar final (incluye \n, \r y espacios) */
         rstrip(buf);
 
-        // Saltear líneas vacías o comentarios
-        char *p = buf;
+        /* Saltear líneas vacías o comentarios */
+        p = buf;
         lstrip(&p);
         if (*p == '\0' || *p == '#') {
-            // Si quedó truncado, consumir el resto de la línea
-            if (truncated) { int c; while ((c = fgetc(f)) != '\n' && c != EOF) {} }
+            /* Si quedó truncado, consumir el resto de la línea */
+            if (truncated) { while ((c = fgetc(f)) != '\n' && c != EOF) {} }
             continue;
         }
 
         if (count >= MAX_FILES) {
-            // Consumir el resto del archivo para no dejarlo a medias
-            if (truncated) { int c; while ((c = fgetc(f)) != '\n' && c != EOF) {} }
-            break; // lleno
+            /* Consumir el resto del archivo para no dejarlo a medias */
+            if (truncated) { while ((c = fgetc(f)) != '\n' && c != EOF) {} }
+            break; /* lleno */
         }
 
-        // Copiar a files[count] con truncado controlado
+        /* Copiar a files[count] con truncado controlado */
         strncpy(files[count], p, MAX_PATH - 1);
         files[count][MAX_PATH - 1] = '\0';
 
-        // Si la línea superaba MAX_PATH-1, avisar (opcional) y consumir resto
+        /* Si la línea superaba MAX_PATH-1, avisar (opcional) y consumir resto */
         if (truncated || strlen(p) >= MAX_PATH) {
-            // fprintf(stderr, "Advertencia: línea %d truncada a %d chars\n", count+1, MAX_PATH-1);
-            int c; while ((c = fgetc(f)) != '\n' && c != EOF) {}
+            /* fprintf(stderr, "Advertencia: línea %d truncada a %d chars\n", count+1, MAX_PATH-1); */
+            while ((c = fgetc(f)) != '\n' && c != EOF) {}
         }
 
         count++;
     }
 
     fclose(f);
-    return count; // >=0 líneas cargadas, -1 si apertura falló
+    return count; /* >=0 líneas cargadas, -1 si apertura falló */
 }
 

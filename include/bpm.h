@@ -1,14 +1,14 @@
-// include/bpm.h
+/* include/bpm.h */
 
 #ifndef BPM_H
 #define BPM_H
 
-#include "common.h" // Asumimos que aquí están SAMPLE_RATE, HOP_SIZE, etc.
+#include "common.h"
 
-// Estructura para guardar todos los resultados de tu análisis
+/* Estructura para guardar todos los resultados de tu análisis */
 typedef struct {
     float bpm_estimado;
-    float* onset_flux_curve; // Array dinámico (tamaño = num_frames)
+    float* onset_flux_curve; /* Array dinámico (tamaño = num_frames) */
     int num_frames;
 } AnalysisResults;
 
@@ -29,4 +29,4 @@ AnalysisResults* analyze_features_and_bpm(float* spectrogram, int num_frames, in
  */
 void write_results_to_csv(const char* filename, const AnalysisResults* results, int sample_rate);
 
-#endif // BPM_H
+#endif /* BPM_H */

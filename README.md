@@ -9,6 +9,7 @@ Analizador de audio paralelo con MPI que calcula espectrogramas mediante STFT (S
 - **FFT**: Implementación Cooley-Tukey in-place
 - **Detección de BPM**: Algoritmo basado en spectral flux y autocorrelación (rango 60-180 BPM)
 - **Exportación CSV**: Espectrograma completo y resultados de análisis
+- **Estándar C89**: Código compatible con ANSI C (C89/C90)
 
 ## Estructura del Proyecto
 
@@ -42,9 +43,11 @@ Analizador de audio paralelo con MPI que calcula espectrogramas mediante STFT (S
 make
 ```
 
+El proyecto usa el estándar C89 (ANSI C) para máxima compatibilidad.
+
 O manualmente:
 ```bash
-mpicc -o main src/*.c -lm -I./include
+mpicc -std=c89 -o main src/*.c -lm -I./include
 ```
 
 ## Uso

@@ -1,5 +1,5 @@
 CC = mpicc
-CFLAGS = -Wall -O2 -I./include
+CFLAGS = -Wall -O2 -std=c89 -I./include
 LDFLAGS = -lm
 
 SRC_DIR = src

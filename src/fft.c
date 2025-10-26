@@ -1,6 +1,10 @@
 #include "fft.h"
 #include <math.h>
 
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
+
 static void bitrev(float *re, float *im, int n){
     int i, j = 0, k;
     for (i = 0; i < n; ++i) {
@@ -27,7 +31,7 @@ void fft_inplace(float *re, float *im, int n){
     for (len = 2; len <= n; len <<= 1) {
         half = len >> 1;
         ang = -2.0f * (float)M_PI / (float)len;
-        c = cosf(ang); s = sinf(ang);
+        c = (float)cos(ang); s = (float)sin(ang);
         for (i = 0; i < n; i += len) {
             wr = 1.0f; wi = 0.0f;
             for (j = 0; j < half; ++j) {
