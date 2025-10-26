@@ -2,6 +2,7 @@
 #define WAV_H
 
 #include <stdio.h>
+#include "../include/common.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -25,6 +26,9 @@ void wav_free(WAVFile *w);
 int wav_write_features_csv(const char *outpath, const float *times, const float *rms,
                            const float *centroid, const float *rolloff, const float *flux,
                            int n_frames, float bpm);
+
+
+int load_wav_list(const char *path, char files[MAX_FILES][MAX_PATH]);
 
 #ifdef __cplusplus
 }

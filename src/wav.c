@@ -1,8 +1,14 @@
 #include "../include/wav.h"
+#include "../include/common.h"
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
 #include <math.h>
+#include <stdio.h>
+#include <ctype.h>
+#include <errno.h>
+
+
 
 /* Lectura de WAV PCM16 (mono) */
 int wav_read(const char *path, WAVFile *out) {
@@ -102,7 +108,7 @@ int wav_read(const char *path, WAVFile *out) {
             samples[i] = raw[i] / 32768.0f;
     } else {
         for (int i = 0; i < frames; i++) {
-            double acc = 0.0;
+            float acc = 0.0;
             for (int c = 0; c < channels; c++)
                 acc += raw[i * channels + c] / 32768.0;
             samples[i] = acc / channels;
@@ -150,3 +156,64 @@ int wav_write_features_csv(const char *outpath, const float *times, const float 
     fclose(f);
     return 0;
 }
+
+static void rstrip(char *s) {
+    size_t n = strlen(s);
+    while (n > 0 && (s[n-1] == '\n' || s[n-1] == '\r' || isspace((unsigned char)s[n-1]))) {
+        s[--n] = '\0';
+    }
+}
+
+static void lstrip(char **ps) {
+    while (**ps && isspace((unsigned char)**ps)) (*ps)++;
+}
+
+int load_wav_list(const char *path, char files[MAX_FILES][MAX_PATH]) {
+    FILE *f = fopen(path, "r");
+    if (!f) {
+        // perror("fopen"); // si querés loguear
+        return -1;
+    }
+
+    int count = 0;
+    char buf[4096]; // buffer grande para detectar líneas largas
+
+    while (fgets(buf, sizeof(buf), f)) {
+        // Detectar truncamiento: si no hay '\n' y no es fin de archivo, la línea es larga
+        int truncated = (strchr(buf, '\n') == NULL && !feof(f));
+
+        // Recortar final (incluye \n, \r y espacios)
+        rstrip(buf);
+
+        // Saltear líneas vacías o comentarios
+        char *p = buf;
+        lstrip(&p);
+        if (*p == '\0' || *p == '#') {
+            // Si quedó truncado, consumir el resto de la línea
+            if (truncated) { int c; while ((c = fgetc(f)) != '\n' && c != EOF) {} }
+            continue;
+        }
+
+        if (count >= MAX_FILES) {
+            // Consumir el resto del archivo para no dejarlo a medias
+            if (truncated) { int c; while ((c = fgetc(f)) != '\n' && c != EOF) {} }
+            break; // lleno
+        }
+
+        // Copiar a files[count] con truncado controlado
+        strncpy(files[count], p, MAX_PATH - 1);
+        files[count][MAX_PATH - 1] = '\0';
+
+        // Si la línea superaba MAX_PATH-1, avisar (opcional) y consumir resto
+        if (truncated || strlen(p) >= MAX_PATH) {
+            // fprintf(stderr, "Advertencia: línea %d truncada a %d chars\n", count+1, MAX_PATH-1);
+            int c; while ((c = fgetc(f)) != '\n' && c != EOF) {}
+        }
+
+        count++;
+    }
+
+    fclose(f);
+    return count; // >=0 líneas cargadas, -1 si apertura falló
+}
+

@@ -1,1 +1,1 @@
-# orquestación SPMD Master/Worker
+# orquestación SPMD

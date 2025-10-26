@@ -7,6 +7,8 @@
 #define DEFAULT_HOP   512     /* avance entre ventanas */
 #define DEFAULT_BPM_MIN 60
 #define DEFAULT_BPM_MAX 200
+#define MAX_FILES 100
+#define MAX_PATH 512
 
 /* Tipos/ventanas disponibles */
 typedef enum {

@@ -1,2 +1,46 @@
+# Editor configurations
 .DS_Store
 .vscode/
+*.swp
+*.swo
+*~
+
+# Compiled Object files
+*.o
+*.obj
+obj/
+
+# Executables
+main
+test_bpm
+test_fft
+*.exe
+*.out
+*.app
+
+# Results and output files
+results/*.csv
+results/*.txt
+
+# Audio files (opcional - descomenta si no quieres subir archivos grandes)
+# data/*.wav
+# data/*.mp3
+
+# Core dumps and debug files
+core
+*.core
+vgcore.*
+
+# Build artifacts
+*.a
+*.so
+*.dylib
+
+# Backup files
+*.bak
+*.backup
+*~
+
+# OS files
+Thumbs.db
+.DS_Store

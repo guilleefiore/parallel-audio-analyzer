@@ -1,46 +1,58 @@
-#include "../include/stft.h"
-#include "../include/window.h"
-#include "../include/fft.h"
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include "../include/stft.h"
+#include "../include/common.h"
+#include "../include/window.h"
+#include "../include/fft.h"
 
-int stft_compute(const double *x, int ns, const struct Config *cfg, struct STFT *out){
-    int N = cfg -> N, hop = cfg -> hop, n_frames, n_bins, f, k, off;
-    double *frame, *re, *im, *mag;
-
-    if (ns < N || hop <=0) return -1;
-    n_frames = STFT_NFRAMES(ns, N, hop);
-    n_bins = STFT_NBINS(N);
-
-    frame = (double*) malloc(sizeof(double) * N);
-    re = (double*) malloc(sizeof(double) * N);
-    im = (double*) malloc(sizeof(double) * N);
-    mag = (double*) malloc(sizeof(double) * n_frames*n_bins);
-    if (!frame || !re || !im || !mag) return -2;
-
-    for (f = 0; f < n_frames; ++f) {
-        off = f * hop;
-        memcpy(frame, x + off, sizeof(double)*N);
-        window_apply(frame, N, cfg -> wtype);
-        for (k = 0; k < N; ++k) { re[k] = frame[k]; im[k] = 0.0; }
-        fft_inplace(re, im, N);
-        for (k = 0; k < n_bins; ++k) {
-            double r = re[k], ii = im[k];
-            mag[f*n_bins + k] = sqrt(r*r + ii*ii);
-        }
+int calculate_local_frames(int rank, int n_frames, int procs_number) {
+    int local_frames = 0;
+    for (int i = rank; i < n_frames; i += procs_number) {
+        local_frames++;
     }
-
-    out->N = N; out->hop = hop; out->n_frames = n_frames; out->n_bins = n_bins;
-    out->mag = mag;
-
-    free(frame); free(re); free(im);
-    return 0;
+    return local_frames;
 }
 
-void stft_free(struct STFT *S){
-    if (S && S->mag) {
-        free(S->mag);
-        S->mag = 0;
+float* compute_stft_local(float* samples, int n_samples, int rank, int procs_number, 
+                          int n_frames, int n_bins, int local_frames) {
+    
+    float *mag_local = malloc(local_frames * n_bins * sizeof(float));
+    
+    if (!mag_local) {
+        return NULL;
     }
+
+    int idx_local = 0;
+    for (int i = rank; i < n_frames; i += procs_number) {
+        // Extraer ventana
+        float frame[DEFAULT_N];
+        memcpy(frame, samples + i * DEFAULT_HOP, sizeof(float) * DEFAULT_N);
+        
+        // Aplicar ventana de Hann
+        window_apply(frame, DEFAULT_N, WIN_HANN);
+
+        // Preparar arrays para FFT
+        float real[DEFAULT_N];
+        float imaginary[DEFAULT_N];
+
+        for (int k = 0; k < DEFAULT_N; k++) {
+            real[k] = frame[k];
+            imaginary[k] = 0.0f;
+        }
+
+        // Aplicar FFT
+        fft_inplace(real, imaginary, DEFAULT_N);
+
+        // Calcular magnitudes
+        for (int k = 0; k < n_bins; k++) {
+            float r = real[k];
+            float imv = imaginary[k];
+            mag_local[idx_local * n_bins + k] = sqrtf(r * r + imv * imv);
+        }
+        
+        idx_local++;
+    }
+
+    return mag_local;
 }
