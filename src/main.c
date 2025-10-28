@@ -19,9 +19,10 @@ int main (int argc, char* argv[]) {
     float *mag_local;
     float *mag_global;
     int i, k;
-    
     MPI_Init(&argc, &argv);
-
+    double t_start, t_end;
+    t_start = MPI_Wtime();
+    
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &procs_number);
 
@@ -147,7 +148,9 @@ int main (int argc, char* argv[]) {
 
     free(samples);
     free(mag_local);
-
+    t_end = MPI_Wtime();
+    if(rank == 0)
+    printf("Tiempo total de ejecución: %f segundos\n", t_end - t_start);
     MPI_Finalize();
     return 0;
 }
