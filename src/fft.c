@@ -1,11 +1,15 @@
 #include "fft.h"
 #include <math.h>
 
-static void bitrev(double *re, double *im, int n){
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
+
+static void bitrev(float *re, float *im, int n){
     int i, j = 0, k;
     for (i = 0; i < n; ++i) {
         if (i < j) {
-            double tr = re[i], ti = im[i];
+            float tr = re[i], ti = im[i];
             re[i] = re[j];
             im[i] = im[j];
             re[j] = tr;
@@ -20,25 +24,31 @@ static void bitrev(double *re, double *im, int n){
     }
 }
 
-void fft_inplace(double *re, double *im, int n){
+void fft_inplace(float *re, float *im, int n){
     int len, i, j, half;
-    double ang, c, s, wr, wi, ur, ui, tr, ti, tmp;
+    float ang, c, s, wr, wi, ur, ui, tr, ti, tmp;
     bitrev(re, im, n);
     for (len = 2; len <= n; len <<= 1) {
-        ang = -2.0 * M_PI / (double)len; c = cos(ang); s = sin(ang);
+        half = len >> 1;
+        ang = -2.0f * (float)M_PI / (float)len;
+        c = (float)cos(ang); s = (float)sin(ang);
         for (i = 0; i < n; i += len) {
-            ur = re[i + j]; ui = im[i + j];
-                tr = wr * re[i + j + half] - wi * im[i + j+ half];
-                ti = wr * im[i + j + half] + wi * re[i + j+ half];
+            wr = 1.0f; wi = 0.0f;
+            for (j = 0; j < half; ++j) {
+                ur = re[i + j]; ui = im[i + j];
+                tr = wr * re[i + j + half] - wi * im[i + j + half];
+                ti = wr * im[i + j + half] + wi * re[i + j + half];
                 re[i + j] = ur + tr; im[i + j] = ui + ti;
                 re[i + j + half] = ur - tr; im[i + j + half] = ui - ti;
                 /* twiddle update (rotación) */
                 tmp = wr; wr = tmp * c - wi * s; wi = tmp * s + wi * c;
+            }
         }
     }
 }
 
-void ifft_inplace(double *re, double *im, int n){
+
+void ifft_inplace(float *re, float *im, int n){
     int k;
     for (k = 0; k < n; ++k) im[k] = -im[k];
     fft_inplace(re, im, n);

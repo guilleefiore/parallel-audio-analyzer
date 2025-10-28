@@ -6,10 +6,10 @@
 #define M_PI 3.14159265358979323846
 #endif
 
-void window_apply(double *x, int N, win_t wtype) {
+void window_apply(float *x, int N, win_t wtype) {
     int n;
     for (n = 0; n < N; ++n) {
-        double w = 1.0;
+        float w = 1.0;
         if (wtype == WIN_HANN)
             w = 0.5 * (1.0 - cos(2.0 * M_PI * n / (N - 1)));
         else if (wtype == WIN_HAMMING) w = 0.54 - 0.46 * cos(2.0 * M_PI * n / (N - 1));
