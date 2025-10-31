@@ -20,8 +20,8 @@ int main (int argc, char* argv[]) {
     float *mag_global;
     int i, k;
     MPI_Init(&argc, &argv);
-    double t0, t1, t2, t3;
-    t0 = MPI_Wtime();
+    double t_start, t_end, t_start_input, t_end_input, t_start_write_spec, t_end_write_spec;
+    t_start = MPI_Wtime();
 
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &procs_number);
@@ -51,6 +51,8 @@ int main (int argc, char* argv[]) {
             printf("%d. %s\n", i+1, files[i]);
         }
 
+        t_start_input = MPI_Wtime();
+
         printf("\nPor favor, ingrese el numero de audio para analizar:\n");
         scanf("%d", &audio_index);
 
@@ -58,6 +60,8 @@ int main (int argc, char* argv[]) {
             printf("\nNumero invalido, por favor, intente nuevamente:\n");
             scanf("%d", &audio_index);
         }
+
+        t_end_input = MPI_Wtime();
 
         {
             char* audio_path = files[audio_index-1];
@@ -114,7 +118,7 @@ int main (int argc, char* argv[]) {
     /* Generar CSV y análisis de BPM (solo en rank 0) */
     if (rank == 0) {
 
-        t1 = MPI_Wtime();
+        t_start_write_spec = MPI_Wtime();
         FILE *f;
         AnalysisResults* analysis_results;
         
@@ -139,7 +143,7 @@ int main (int argc, char* argv[]) {
         fclose(f);
         printf("\nArchivo CSV guardado en results/spectrogram.csv\n");
         
-        t2 = MPI_Wtime();
+        t_end_write_spec = MPI_Wtime();
 
         /* Calcular BPM y características */
         analysis_results = analyze_features_and_bpm(mag_global, n_frames, n_bins, wav_file.samplerate);
@@ -153,10 +157,10 @@ int main (int argc, char* argv[]) {
 
     free(samples);
     free(mag_local);
-    t3 = MPI_Wtime();
+    t_end = MPI_Wtime();
     if(rank == 0)
     /* Calculamos el tiempo sin contar la escritura del espectograma */
-    printf("Tiempo total de ejecución: %f segundos\n", t3 - t0 - (t2 - t1));
+    printf("Tiempo total de ejecución: %f segundos\n", t_end - t_start - (t_end_input - t_start_input) - (t_end_write_spec - t_start_write_spec));
     MPI_Finalize();
     return 0;
 }
