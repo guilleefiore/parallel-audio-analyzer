@@ -156,7 +156,7 @@ int main (int argc, char* argv[]) {
     t3 = MPI_Wtime();
     if(rank == 0)
     /* Calculamos el tiempo sin contar la escritura del espectograma */
-    printf("Tiempo total de ejecución: %f segundos\n", t_3 - t_0 - (t_2 - t_1));
+    printf("Tiempo total de ejecución: %f segundos\n", t3 - t0 - (t2 - t1));
     MPI_Finalize();
     return 0;
 }
