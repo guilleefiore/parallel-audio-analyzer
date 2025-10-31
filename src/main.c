@@ -160,7 +160,7 @@ int main (int argc, char* argv[]) {
     t_end = MPI_Wtime();
     if(rank == 0)
     /* Calculamos el tiempo sin contar la escritura del espectograma */
-    printf("Tiempo total de ejecución: %f segundos\n", t_end - t_start - (t_end_input - t_start_input) - (t_end_write_spec - t_start_write_spec));
+    printf("Tiempo total de ejecución (sin escritura del espectrograma): %f segundos\n", t_end - t_start - (t_end_input - t_start_input) - (t_end_write_spec - t_start_write_spec));
     printf("Tiempo total de ejecución: %f segundos\n",t_end - t_start);
 
     MPI_Finalize();
