@@ -34,7 +34,7 @@ float* compute_stft_local(float* samples, int n_samples, int rank, int procs_num
     int idx_local;
     int i, k;
     
-    // 1. Reservar memoria para los resultados de este proceso
+    /* 1. Reservar memoria para los resultados de este proceso */
     mag_local = malloc(local_frames * n_bins * sizeof(float));
     
     if (!mag_local) {
@@ -43,14 +43,14 @@ float* compute_stft_local(float* samples, int n_samples, int rank, int procs_num
 
     idx_local = 0;
 
-    // 2. Bucle de procesamiento principal (distribución cíclica)
+    /* 2. Bucle de procesamiento principal (distribución cíclica) */
     for (i = rank; i < n_frames; i += procs_number) {
         float frame[DEFAULT_N];
         float real[DEFAULT_N];
         float imaginary[DEFAULT_N];
         float r, imv;
 
-        // --- INICIO DEL PIPELINE DE STFT (para el frame 'i') ---
+        /* --- INICIO DEL PIPELINE DE STFT (para el frame 'i') --- */
         
         /* PASO 1: Extraer el frame del audio */
         memcpy(frame, samples + i * DEFAULT_HOP, sizeof(float) * DEFAULT_N);
@@ -77,8 +77,8 @@ float* compute_stft_local(float* samples, int n_samples, int rank, int procs_num
         idx_local++;
     }
 
-    // --- FIN DEL PIPELINE ---
+    /* --- FIN DEL PIPELINE --- */
 
-    // 3. Devolver el puntero al bloque de resultados locales
+    /* 3. Devolver el puntero al bloque de resultados locales */
     return mag_local;
 }
