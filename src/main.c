@@ -20,8 +20,8 @@ int main (int argc, char* argv[]) {
     float *mag_global;
     int i, k;
     MPI_Init(&argc, &argv);
-    double t_start, t_end;
-    t_start = MPI_Wtime();
+    double t_0, t_1, t_2, t_3;
+    t_0 = MPI_Wtime();
     
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &procs_number);
@@ -110,8 +110,11 @@ int main (int argc, char* argv[]) {
     mag_global = gather_and_reorder_spectrogram(mag_local, local_frames, n_frames, 
                                                  n_bins, rank, procs_number);
 
+                                        
     /* Generar CSV y análisis de BPM (solo en rank 0) */
     if (rank == 0) {
+
+        t_1 = MPI_Wtime();
         FILE *f;
         AnalysisResults* analysis_results;
         
@@ -136,6 +139,8 @@ int main (int argc, char* argv[]) {
         fclose(f);
         printf("\nArchivo CSV guardado en results/spectrogram.csv\n");
         
+        t_2 = MPI_Wtime();
+
         /* Calcular BPM y características */
         analysis_results = analyze_features_and_bpm(mag_global, n_frames, n_bins, wav_file.samplerate);
         write_results_to_csv("results/analysis_results.csv", analysis_results, wav_file.samplerate);
@@ -148,9 +153,10 @@ int main (int argc, char* argv[]) {
 
     free(samples);
     free(mag_local);
-    t_end = MPI_Wtime();
+    t_3 = MPI_Wtime();
     if(rank == 0)
-    printf("Tiempo total de ejecución: %f segundos\n", t_end - t_start);
+    /* Calculamos el tiempo sin contar la escritura del espectograma */
+    printf("Tiempo total de ejecución: %f segundos\n", t_3 - t_0 - (t_2 - t_1));
     MPI_Finalize();
     return 0;
 }
