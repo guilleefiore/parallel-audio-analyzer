@@ -1,2 +1,3 @@
 # Canciones disponibles
 data/song1.wav
+data/song2(384000Hz).wav
