@@ -2,4 +2,4 @@
 data/Charli xcx - party 4 u (44kHz).wav
 data/Liam Gallagher - Once (300kHz).wav
 data/Virus - Pronta Entrega (192kHz).wav
-data/TAN BIONICA - Lunita de Tucuman (16kHz).wav
+data/TAN BIONICA - Lunita de Tucuman (6kHz).wav
