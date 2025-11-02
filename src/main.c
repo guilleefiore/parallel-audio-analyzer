@@ -20,7 +20,9 @@ int main (int argc, char* argv[]) {
     float *mag_global;
     int i, k;
     MPI_Init(&argc, &argv);
-    double t_start, t_end, t_start_input, t_end_input, t_start_write_spec, t_end_write_spec;
+    double t_start, t_end, t_start_input, t_end_input, t_start_compute_stft, t_end_compute_stft, t_start_write_spec, t_end_write_spec;
+    double t_total, t_total_compute_stft, t_total_input, t_total_write_spec;
+
     t_start = MPI_Wtime();
 
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
@@ -76,7 +78,9 @@ int main (int argc, char* argv[]) {
     /* Primero hacemos broadcast de la cantidad total de muestras */
     if (rank == 0) {
         n_samples = wav_file.n_samples;
+        t_start_compute_stft = MPI_Wtime();
     }
+
 
     MPI_Bcast(&n_samples, 1, MPI_INT, 0, MPI_COMM_WORLD);
 
@@ -113,10 +117,14 @@ int main (int argc, char* argv[]) {
     /* Recolectar y reordenar resultados */
     mag_global = gather_and_reorder_spectrogram(mag_local, local_frames, n_frames, 
                                                  n_bins, rank, procs_number);
-
-                                        
+    
     /* Generar CSV y análisis de BPM (solo en rank 0) */
     if (rank == 0) {
+
+        /* Calculamos y mostramos el tiempo de computo */
+        t_end_compute_stft = MPI_Wtime();
+        t_total_compute_stft = t_end_compute_stft - t_start_compute_stft;
+        printf("Tiempo de computo STFT: %f segundos\n", t_total_compute_stft);
 
         t_start_write_spec = MPI_Wtime();
         FILE *f;
@@ -160,9 +168,15 @@ int main (int argc, char* argv[]) {
     t_end = MPI_Wtime();
     if(rank == 0)
     /* Calculamos el tiempo sin contar la escritura del espectograma */
-    printf("Tiempo total de ejecución (sin escritura del espectrograma): %f segundos\n", t_end - t_start - (t_end_input - t_start_input) - (t_end_write_spec - t_start_write_spec));
-    printf("Tiempo total de ejecución: %f segundos\n",t_end - t_start);
+
+    t_total = t_end - t_start;
+    t_total_input = t_end_input - t_start_input;
+    t_total_write_spec = t_end_write_spec - t_start_write_spec;
+
+    printf("Tiempo total de ejecución (sin escritura del espectrograma): %f segundos\n", t_total - (t_total_write_spec + t_total_input));
+    printf("Tiempo total de ejecución: %f segundos\n", t_total - t_total_input);
 
     MPI_Finalize();
+    
     return 0;
 }
