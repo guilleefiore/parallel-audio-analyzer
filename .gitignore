@@ -4,7 +4,7 @@
 *.swp
 *.swo
 *~
-*.wav
+
 # Compiled Object files
 *.o
 *.obj
@@ -18,13 +18,9 @@ test_fft
 *.out
 *.app
 
-# Results and output files
-results/*.csv
-results/*.txt
-
-# Audio files (opcional - descomenta si no quieres subir archivos grandes)
-# data/*.wav
-# data/*.mp3
+# Songs, results and output files
+results/*
+data/*.wav
 
 # Core dumps and debug files
 core

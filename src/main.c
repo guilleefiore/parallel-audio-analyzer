@@ -7,9 +7,12 @@
 #include "stft.h"
 #include "mpi_utils.h"
 #include "bpm.h"
+#include <sys/stat.h>
+#include <sys/types.h>
 
 
 int main (int argc, char* argv[]) {
+    MPI_Init(&argc, &argv);
     int rank;
     int procs_number;
     WAVFile wav_file;
@@ -19,7 +22,7 @@ int main (int argc, char* argv[]) {
     float *mag_local;
     float *mag_global;
     int i, k;
-    MPI_Init(&argc, &argv);
+    char* results_path;
     double t_start, t_end, t_start_input, t_end_input, t_start_compute_stft, t_end_compute_stft, t_start_write_spec, t_end_write_spec;
     double t_total, t_total_compute_stft, t_total_input, t_total_write_spec;
 
@@ -65,13 +68,29 @@ int main (int argc, char* argv[]) {
 
         t_end_input = MPI_Wtime();
 
-        {
-            char* audio_path = files[audio_index-1];
 
-            if (wav_read(audio_path, &wav_file) == -1){
-                printf("Error en la lectura del archivo de audio");
-                return -1;
-            }
+        /* Guardamos la ruta del audio */
+        char* audio_path = files[audio_index-1];
+        
+        /* Creamos la ruta para los resultados de esta cancion en particular */
+        char aux_path[256];
+
+        /* Copiamos la ruta del audio en la ruta auxiliar */
+        strncpy(aux_path, audio_path + 5, 255); /* Copiamos sin el comienzo con "data/" */   
+
+        aux_path[255] = '\0'; /* Aseguramos que la cadena esté terminada en null */
+        aux_path[strlen(aux_path) - 4] = '\0'; /* Remover .wav */
+
+        /* Colocamos el nombre del archivo, sin la extension, en la ruta de resultados */
+        results_path = malloc(256 * sizeof(char));
+        sprintf(results_path, "results/%s", aux_path);
+
+        /* Creamos el directorio (ignoramos si ya existe) */
+        mkdir(results_path, 0755);
+
+        if (wav_read(audio_path, &wav_file) == -1){
+            printf("Error en la lectura del archivo de audio");
+            return -1;
         }
     }
 
@@ -132,7 +151,16 @@ int main (int argc, char* argv[]) {
         
         printf("\nEspectrograma global recibido (%d ventanas x %d bins)\n", n_frames, n_bins);
 
-        f = fopen("results/spectrogram.csv", "w");
+        
+        char* spectrogram_path = malloc(256 * sizeof(char));
+        if (!spectrogram_path) {
+            fprintf(stderr, "Error: No se pudo alocar memoria para spectrogram_path\n");
+            MPI_Abort(MPI_COMM_WORLD, 1);
+        }
+
+        sprintf(spectrogram_path, "%s/spectrogram.csv", results_path);
+
+        f = fopen(spectrogram_path, "w");
         if (!f) {
             perror("No se pudo crear el archivo CSV");
             MPI_Finalize();
@@ -149,18 +177,28 @@ int main (int argc, char* argv[]) {
         }
 
         fclose(f);
-        printf("\nArchivo CSV guardado en results/spectrogram.csv\n");
+        printf("\nArchivo CSV guardado en %s\n", spectrogram_path);
         
         t_end_write_spec = MPI_Wtime();
 
         /* Calcular BPM y características */
         analysis_results = analyze_features_and_bpm(mag_global, n_frames, n_bins, wav_file.samplerate);
-        write_results_to_csv("results/analysis_results.csv", analysis_results, wav_file.samplerate);
+        char* analysis_path = malloc(256 * sizeof(char));
+        if (!analysis_path) {
+            fprintf(stderr, "Error: No se pudo alocar memoria para analysis_path\n");
+            MPI_Abort(MPI_COMM_WORLD, 1);
+        }
+
+        sprintf(analysis_path, "%s/analysis_results.csv", results_path);
+        write_results_to_csv(analysis_path, analysis_results, wav_file.samplerate);
 
         /* Liberar memoria */
         free(analysis_results);
         free(mag_global);
         wav_free(&wav_file);
+        free(results_path);
+        free(spectrogram_path);
+        free(analysis_path);    
     }
 
     free(samples);
@@ -173,8 +211,8 @@ int main (int argc, char* argv[]) {
         t_total_input = t_end_input - t_start_input;
         t_total_write_spec = t_end_write_spec - t_start_write_spec;
 
-        printf("Tiempo total de ejecución (sin escritura del espectrograma): %f segundos\n", t_total - (t_total_write_spec + t_total_input));
-        printf("Tiempo total de ejecución: %f segundos\n", t_total - t_total_input);
+        printf("\nTiempo total de ejecución (sin escritura del espectrograma): %f segundos\n", t_total - (t_total_write_spec + t_total_input));
+        printf("\nTiempo total de ejecución: %f segundos\n", t_total - t_total_input);
     }
 
     MPI_Finalize();
