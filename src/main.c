@@ -166,7 +166,7 @@ int main (int argc, char* argv[]) {
     free(samples);
     free(mag_local);
     t_end = MPI_Wtime();
-    if(rank == 0)
+    if(rank == 0) {
     /* Calculamos el tiempo sin contar la escritura del espectograma */
 
     t_total = t_end - t_start;
@@ -175,6 +175,7 @@ int main (int argc, char* argv[]) {
 
     printf("Tiempo total de ejecución (sin escritura del espectrograma): %f segundos\n", t_total - (t_total_write_spec + t_total_input));
     printf("Tiempo total de ejecución: %f segundos\n", t_total - t_total_input);
+    }
 
     MPI_Finalize();
     
