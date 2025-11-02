@@ -1,4 +1,4 @@
 # Canciones disponibles
-data/song1.wav
-data/song2(384000Hz).wav
+data/Charli xcx - party 4 u (44kHz).wav
+data/Liam Gallagher - Once (300kHz).wav
 data/Virus - Pronta Entrega (192kHz).wav
