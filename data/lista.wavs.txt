@@ -1,5 +1,7 @@
 # Canciones disponibles
 data/Charli xcx - party 4 u (44kHz).wav
-data/Liam Gallagher - Once (300kHz).wav
+data/PinkPantheress - Break It Off (100kHz).wav
 data/Virus - Pronta Entrega (192kHz).wav
-data/TAN BIONICA - Lunita de Tucuman (6kHz).wav
+data/Deftones - Drive (240kHz).wav
+data/Liam Gallagher - Once (300kHz).wav
+
