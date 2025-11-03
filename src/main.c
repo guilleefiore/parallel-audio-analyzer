@@ -192,6 +192,8 @@ int main (int argc, char* argv[]) {
         sprintf(analysis_path, "%s/analysis_results.csv", results_path);
         write_results_to_csv(analysis_path, analysis_results, wav_file.samplerate);
 
+        printf("\nBPM de la cancion: %.2f\n", analysis_results->bpm);
+
         /* Liberar memoria */
         free(analysis_results);
         free(mag_global);
