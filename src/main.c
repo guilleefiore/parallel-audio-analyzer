@@ -179,6 +179,7 @@ int main (int argc, char* argv[]) {
         fclose(f);
         printf("\nArchivo CSV guardado en %s\n", spectrogram_path);
         
+        
         t_end_write_spec = MPI_Wtime();
 
         /* Calcular BPM y características */
@@ -199,13 +200,14 @@ int main (int argc, char* argv[]) {
         free(mag_global);
         wav_free(&wav_file);
         free(results_path);
+        free(analysis_path);
         free(spectrogram_path);
-        free(analysis_path);    
     }
 
     free(samples);
     free(mag_local);
     t_end = MPI_Wtime();
+    
     if(rank == 0) {
     /* Calculamos el tiempo sin contar la escritura del espectograma */
 
