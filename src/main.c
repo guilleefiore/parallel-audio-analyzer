@@ -9,7 +9,6 @@
 #include "bpm.h"
 #include <sys/stat.h>
 #include <sys/types.h>
-#include <time.h>
 
 int main (int argc, char* argv[]) {
     MPI_Init(&argc, &argv);
@@ -25,7 +24,6 @@ int main (int argc, char* argv[]) {
     char* results_path;
     double t_start, t_end, t_start_input, t_end_input, t_start_compute_stft, t_end_compute_stft, t_start_write_spec, t_end_write_spec;
     double t_total, t_total_compute_stft, t_total_input, t_total_write_spec;
-    struct timespec t_cpu_start, t_cpu_end;
 
     t_start = MPI_Wtime();
 
@@ -126,11 +124,10 @@ int main (int argc, char* argv[]) {
     local_frames = calculate_local_frames(rank, n_frames, procs_number);
 
     /* Computar STFT local */
-    clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &t_cpu_start);
     mag_local = compute_stft_local(samples, n_samples, rank, procs_number, 
                                    n_frames, n_bins, local_frames);
 
-    clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &t_cpu_end);
+    
 
     if (!mag_local) {
         fprintf(stderr, "Error: No se pudo alocar memoria para mag_local\n");
@@ -155,7 +152,7 @@ int main (int argc, char* argv[]) {
         
         printf("\nEspectrograma global recibido (%d ventanas x %d bins)\n", n_frames, n_bins);
 
-        /*
+        
         char* spectrogram_path = malloc(256 * sizeof(char));
         if (!spectrogram_path) {
             fprintf(stderr, "Error: No se pudo alocar memoria para spectrogram_path\n");
@@ -184,7 +181,7 @@ int main (int argc, char* argv[]) {
 
         fclose(f);
         printf("\nArchivo CSV guardado en %s\n", spectrogram_path);
-        */
+        
 
         t_end_write_spec = MPI_Wtime();
 
@@ -207,7 +204,7 @@ int main (int argc, char* argv[]) {
         wav_free(&wav_file);
         free(results_path);
         free(analysis_path);
-        /*free(spectrogram_path);*/
+        free(spectrogram_path);
     }
 
     free(samples);
@@ -225,10 +222,7 @@ int main (int argc, char* argv[]) {
         printf("\nTiempo total de ejecución: %f segundos\n", t_total - t_total_input);
     }
 
-    printf("Proceso %d: Tiempo de CPU para computar STFT local: %f segundos\n", rank,
-           (t_cpu_end.tv_sec - t_cpu_start.tv_sec) + 
-           (t_cpu_end.tv_nsec - t_cpu_start.tv_nsec) / 1e9);
-
+    
     MPI_Finalize();
     
     return 0;
