@@ -37,6 +37,13 @@ Analizador de audio paralelo con MPI que calcula espectrogramas mediante STFT (S
 
 ```
 
+## Requisitos
+
+Para compilar y ejecutar este proyecto, necesitarás:
+
+-   **Un compilador de C compatible con C89**: `gcc` o `clang` son buenas opciones.
+-   **Una implementación de MPI**: Recomendamos **OpenMPI** o **MPICH**. Asegúrate de que esté instalada y configurada correctamente en tu sistema.
+
 ## Compilación
 
 ```bash
@@ -52,13 +59,35 @@ mpicc -std=c89 -o main src/*.c -lm -I./include
 
 ## Uso
 
-```bash
-mpirun -np <num_procesos> ./main
-```
+Para ejecutar este proyecto, sigue los siguientes pasos:
 
-El programa mostrará una lista de archivos WAV disponibles y solicitará la selección de uno para analizar.
+1.  **Asegúrate de que MPI esté configurado y funcionando en tu sistema.**
+    *   Si tienes mas de una computadoras (multiples nodos en un cluster) debes tener la maquina virtual de MPI funcionando (si solo estas usando una computadora, no es necesario). Para iniciarla usa el siguiente comando:
+    ```bash
+    mpdboot -n <num_nodos>
+    ```
+    *   Asegúrate de que tus variables de entorno (`PATH`, `LD_LIBRARY_PATH`) estén configuradas correctamente para que MPI pueda encontrar sus ejecutables y bibliotecas.
+
+2.  **Compila el proyecto.**
+    *   Navega a la raíz del proyecto en tu terminal.
+    *   Ejecuta `make` para compilar el programa. Esto creará el ejecutable `main` en la raíz del proyecto.
+
+    ```bash
+    make
+    ```
+
+3.  **Ejecuta el programa paralelo.**
+    *   Una vez compilado, puedes ejecutar el analizador de audio utilizando `mpirun`, especificando el número de procesos (`-np`).
+
+    ```bash
+    mpirun -np <num_procesos> ./main
+    ```
+
+    El programa mostrará una lista de archivos WAV disponibles en el directorio `data/` y solicitará la selección de uno para analizar.
 
 ### Ejemplo
+
+Para ejecutar el analizador con 4 procesos:
 
 ```bash
 mpirun -np 4 ./main
