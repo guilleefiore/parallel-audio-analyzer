@@ -1,4 +1,4 @@
-# Canciones disponibles
+# Canciones disponibles (Ejemplos)
 data/Charli xcx - party 4 u (44kHz).wav
 data/PinkPantheress - Break It Off (100kHz).wav
 data/Virus - Pronta Entrega (192kHz).wav

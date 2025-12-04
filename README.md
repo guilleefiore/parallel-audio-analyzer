@@ -61,14 +61,22 @@ mpicc -std=c89 -o main src/*.c -lm -I./include
 
 Para ejecutar este proyecto, sigue los siguientes pasos:
 
-1.  **Asegúrate de que MPI esté configurado y funcionando en tu sistema.**
+1.  **Preparación de archivos de audio.**
+    *   Coloca tus archivos WAV en el directorio `data/`.
+    *   Asegúrate de que la ruta a cada archivo WAV esté listada en `data/lista.wavs.txt`, una ruta por línea. Por ejemplo:
+        ```
+        data/tu_cancion.wav
+        data/otra_cancion.wav
+        ```
+
+2.  **Asegúrate de que MPI esté configurado y funcionando en tu sistema.**
     *   Si tienes mas de una computadoras (multiples nodos en un cluster) debes tener la maquina virtual de MPI funcionando (si solo estas usando una computadora, no es necesario). Para iniciarla usa el siguiente comando:
     ```bash
     mpdboot -n <num_nodos>
     ```
     *   Asegúrate de que tus variables de entorno (`PATH`, `LD_LIBRARY_PATH`) estén configuradas correctamente para que MPI pueda encontrar sus ejecutables y bibliotecas.
 
-2.  **Compila el proyecto.**
+3.  **Compila el proyecto.**
     *   Navega a la raíz del proyecto en tu terminal.
     *   Ejecuta `make` para compilar el programa. Esto creará el ejecutable `main` en la raíz del proyecto.
 
